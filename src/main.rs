@@ -1,8 +1,12 @@
 mod types;
 
+use std::collections::HashMap;
+
 use crate::types::{Lock, State};
 use actix_web::{
-  delete, get, post, put, web::Json, App, HttpRequest, HttpResponse, HttpServer, Result,
+  delete, get, post, put,
+  web::{Json, Query},
+  App, HttpResponse, HttpServer, Result,
 };
 
 static mut STATE: Option<State> = None;
@@ -39,8 +43,11 @@ async fn get_state() -> Result<HttpResponse> {
 }
 
 #[post("/state")]
-async fn set_state(req: HttpRequest, state: Json<State>) -> Result<HttpResponse> {
-  let lock_id = req.query_string().split('=').collect::<Vec<&str>>()[1];
+async fn set_state(
+  query: Query<HashMap<String, String>>,
+  state: Json<State>,
+) -> Result<HttpResponse> {
+  let lock_id: String = query.get("ID").unwrap().to_string();
 
   unsafe {
     if LOCK.is_some() && LOCK.as_ref().unwrap().id != lock_id {
@@ -60,7 +67,6 @@ async fn main() -> std::io::Result<()> {
       .service(unlock)
       .service(get_state)
       .service(set_state)
-    // .route("/hey", web::get().to(manual_hello))
   })
   .bind("127.0.0.1:8000")?
   .run()
