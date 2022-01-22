@@ -1,59 +1,68 @@
-#[macro_use]
-extern crate rocket;
-use rocket::http::Status;
-use rocket::serde::json::Json;
-
 mod types;
+
 use crate::types::{Lock, State};
+use actix_web::{
+  delete, get, post, put, web::Json, App, HttpRequest, HttpResponse, HttpServer, Result,
+};
 
 static mut STATE: Option<State> = None;
 static mut LOCK: Option<Lock> = None;
 
-#[put("/lock", data = "<lock>")]
-fn lock<'a>(lock: Json<Lock>) -> (Status, Json<Option<Lock>>) {
-    unsafe {
-        if LOCK.is_some() {
-            return (Status::Conflict, Json::from(LOCK.clone()));
-        }
-
-        LOCK = Some(lock.into_inner());
-        (Status::Ok, Json::from(LOCK.clone()))
+#[put("/lock")]
+async fn lock(lock: Json<Lock>) -> Result<HttpResponse> {
+  unsafe {
+    if LOCK.is_some() {
+      return Ok(HttpResponse::Conflict().json(&LOCK));
     }
+
+    LOCK = Some(lock.into_inner());
+    Ok(HttpResponse::Ok().json(&LOCK))
+  }
 }
 
 #[delete("/lock")]
-fn unlock() -> Status {
-    unsafe {
-        LOCK = None;
-    }
-    Status::Ok
+async fn unlock() -> Result<HttpResponse> {
+  unsafe {
+    LOCK = None;
+  }
+  Ok(HttpResponse::Ok().json(""))
 }
 
 #[get("/state")]
-fn get_state() -> (Status, Json<Option<State>>) {
-    unsafe {
-        if STATE.is_some() {
-            dbg!(&STATE);
-            return (Status::Ok, STATE.clone().into());
-        }
-        (Status::NotFound, Json::from(None))
+async fn get_state() -> Result<HttpResponse> {
+  unsafe {
+    if STATE.is_some() {
+      return Ok(HttpResponse::Ok().json(&STATE));
     }
+    Ok(HttpResponse::NotFound().json("{}"))
+  }
 }
 
-#[post("/state?<ID>", data = "<state>")]
-#[allow(non_snake_case)] // Cannot be renamed to "id"
-fn set_state(ID: String, state: Json<State>) -> Status {
-    unsafe {
-        if LOCK.is_some() && LOCK.as_ref().unwrap().id != ID {
-            return Status::Conflict;
-        }
+#[post("/state")]
+async fn set_state(req: HttpRequest, state: Json<State>) -> Result<HttpResponse> {
+  let lock_id = req.query_string().split('=').collect::<Vec<&str>>()[1];
 
-        STATE = Some(state.into_inner());
+  unsafe {
+    if LOCK.is_some() && LOCK.as_ref().unwrap().id != lock_id {
+      return Ok(HttpResponse::Conflict().json(&LOCK));
     }
-    Status::Ok
+    LOCK = None;
+    STATE = Some(state.clone());
+    return Ok(HttpResponse::Ok().json(&STATE));
+  }
 }
 
-#[launch]
-fn rocket() -> _ {
-    rocket::build().mount("/", routes![lock, unlock, get_state, set_state])
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+  HttpServer::new(|| {
+    App::new()
+      .service(lock)
+      .service(unlock)
+      .service(get_state)
+      .service(set_state)
+    // .route("/hey", web::get().to(manual_hello))
+  })
+  .bind("127.0.0.1:8000")?
+  .run()
+  .await
 }
