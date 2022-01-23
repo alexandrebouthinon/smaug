@@ -1,6 +1,8 @@
 use super::{Lock, State};
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct Environment {
   pub(crate) id: Uuid,
   pub(crate) name: String,

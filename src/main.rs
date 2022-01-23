@@ -1,7 +1,7 @@
 mod api;
 use std::collections::HashMap;
 
-use crate::api::{Lock, State};
+use crate::api::types::{Lock, State};
 use actix_web::{
   delete, get, post, put,
   web::{Json, Query},

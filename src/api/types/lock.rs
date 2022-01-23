@@ -3,25 +3,25 @@ use serde::{Deserialize, Serialize};
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub(crate) struct Lock {
   #[serde(rename = "ID")]
-  pub id: String,
+  pub(crate) id: String,
 
   #[serde(rename = "Who")]
-  pub who: String,
+  who: String,
 
   #[serde(rename = "Created")]
-  pub created: String,
+  created: String,
 
   #[serde(rename = "Operation")]
-  pub operation: String,
+  operation: String,
 
   #[serde(rename = "Info")]
-  pub info: String,
+  info: String,
 
   #[serde(rename = "Path")]
-  pub path: String,
+  path: String,
 
   #[serde(rename = "Version")]
-  pub version: String,
+  version: String,
 }
 
 #[cfg(test)]

@@ -1,10 +1,15 @@
-use super::Environment;
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+use super::Environment;
+use super::User;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct Project {
   pub(crate) id: Uuid,
   pub(crate) name: String,
   pub(crate) environments: Vec<Environment>,
+  pub(crate) members: Vec<User>,
 }
 
 impl Project {
@@ -13,6 +18,7 @@ impl Project {
       id: Uuid::new_v4(),
       name,
       environments: vec![],
+      members: vec![],
     }
   }
 
