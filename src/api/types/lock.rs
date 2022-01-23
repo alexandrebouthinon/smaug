@@ -30,7 +30,7 @@ mod tests {
   use std::error::Error;
 
   #[test]
-  fn test_lock_new() -> Result<(), Box<dyn Error>> {
+  fn test_lock_deserialize() -> Result<(), Box<dyn Error>> {
     let lock = serde_json::from_str::<Lock>(&String::from(
       r#"{
         "ID": "d5b9f8f8-c9f8-4f8f-b8f8-f8f8f8f8f8f8",

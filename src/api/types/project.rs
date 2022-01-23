@@ -12,38 +12,24 @@ pub(crate) struct Project {
   pub(crate) members: Vec<User>,
 }
 
-impl Project {
-  pub(crate) fn new(name: String) -> Self {
-    Project {
-      id: Uuid::new_v4(),
-      name,
-      environments: vec![],
-      members: vec![],
-    }
-  }
-
-  pub(crate) fn add_environment(&mut self, name: String) -> &mut Self {
-    self.environments.push(Environment::new(name, &self.id));
-    self
-  }
-}
-
 #[cfg(test)]
 mod tests {
   use super::*;
 
   #[test]
-  fn test_project_new() {
-    let project = Project::new("test".to_string());
-    assert_ne!(project.id.to_string(), "");
-    assert_eq!(project.name, "test");
-    assert_eq!(project.environments.len(), 0);
-  }
+  fn test_project_serialize() {
+    let project = Project {
+      id: Uuid::new_v4(),
+      name: "test".to_string(),
+      environments: vec![],
+      members: vec![],
+    };
+    let serialized = serde_json::to_string(&project).unwrap();
+    let serialized_expected = format!(
+      r#"{{"id":"{}","name":"test","environments":[],"members":[]}}"#,
+      project.id
+    );
 
-  #[test]
-  fn test_project_add_environment() {
-    let mut project = Project::new("test".to_string());
-    project.add_environment("test".to_string());
-    assert_eq!(project.environments.len(), 1);
+    assert_eq!(serialized, serialized_expected);
   }
 }

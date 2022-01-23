@@ -19,7 +19,7 @@ mod tests {
   use super::*;
 
   #[test]
-  fn test_state_new() -> Result<(), Box<dyn Error>> {
+  fn test_state_deserialize() -> Result<(), Box<dyn Error>> {
     let state = serde_json::from_str::<State>(&String::from(
       r#"{
         "lineage": "",

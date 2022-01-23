@@ -11,30 +11,24 @@ pub(crate) struct Environment {
   pub(crate) project_id: Uuid,
 }
 
-impl Environment {
-  pub(crate) fn new(name: String, project_id: &Uuid) -> Self {
-    Self {
-      id: Uuid::new_v4(),
-      lock: None,
-      name,
-      project_id: project_id.clone(),
-      state: None,
-    }
-  }
-}
-
 #[cfg(test)]
 mod tests {
   use super::*;
 
   #[test]
-  fn test_environment_new() {
-    let projet_id = Uuid::new_v4();
-    let environment = Environment::new("test".to_string(), &projet_id);
-    assert_ne!(environment.id.to_string(), "");
-    assert_eq!(environment.name, "test");
-    assert!(environment.lock.is_none());
-    assert_eq!(environment.project_id, projet_id);
-    assert!(environment.state.is_none());
+  fn test_environment_serialize() {
+    let environment = Environment {
+      id: Uuid::new_v4(),
+      name: "test".to_string(),
+      lock: None,
+      state: None,
+      project_id: Uuid::new_v4(),
+    };
+    let serialized = serde_json::to_string(&environment).unwrap();
+    let serialized_expected = format!(
+      r#"{{"id":"{}","name":"test","lock":null,"state":null,"project_id":"{}"}}"#,
+      environment.id, environment.project_id
+    );
+    assert_eq!(serialized, serialized_expected);
   }
 }
