@@ -53,7 +53,6 @@ async fn set_state(
     if LOCK.is_some() && LOCK.as_ref().unwrap().id != lock_id {
       return Ok(HttpResponse::Conflict().json(&LOCK));
     }
-    LOCK = None;
     STATE = Some(state.clone());
     return Ok(HttpResponse::Ok().json(&STATE));
   }
