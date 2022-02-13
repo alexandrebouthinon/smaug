@@ -25,7 +25,7 @@ RUN cargo build --release
 ####################################################################################################
 ## Final image
 ####################################################################################################
-FROM scratch
+FROM gcr.io/distroless/cc-debian11
 
 ENV USER=einherjar
 ENV APP=einherjar
@@ -35,7 +35,7 @@ COPY --from=builder /etc/group /etc/group
 
 WORKDIR /var/app
 
-COPY --from=builder /$APP/target/release/$APP /var/
+COPY --from=builder /$APP/target/release/$APP /var/app/$APP
 
 USER $USER:$USER
 
