@@ -1,0 +1,45 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug executable 'einherjar'",
+      "cargo": {
+        "args": [
+          "build",
+          "--bin=einherjar",
+          "--package=einherjar"
+        ],
+        "filter": {
+          "name": "einherjar",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in executable 'einherjar'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--bin=einherjar",
+          "--package=einherjar"
+        ],
+        "filter": {
+          "name": "einherjar",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}
