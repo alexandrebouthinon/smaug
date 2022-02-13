@@ -3,8 +3,8 @@
 ####################################################################################################
 FROM rust:latest AS builder
 
-ENV USER=einherjar
-ENV APP=einherjar
+ENV USER=smaug
+ENV APP=smaug
 ENV UID=10001
 
 RUN adduser \
@@ -27,8 +27,8 @@ RUN cargo build --release
 ####################################################################################################
 FROM gcr.io/distroless/cc-debian11
 
-ENV USER=einherjar
-ENV APP=einherjar
+ENV USER=smaug
+ENV APP=smaug
 
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/group /etc/group
@@ -39,4 +39,4 @@ COPY --from=builder /$APP/target/release/$APP /var/app/$APP
 
 USER $USER:$USER
 
-CMD ["/var/app/einherjar"]
+CMD ["/var/app/smaug"]

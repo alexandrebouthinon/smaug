@@ -1,5 +1,5 @@
 [package]
-name = "einherjar"
+name = "smaug"
 version = "0.1.0"
 authors = ["Alexandre Bouthinon"]
 edition = "2021"

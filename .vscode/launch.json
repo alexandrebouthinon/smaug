@@ -7,15 +7,15 @@
     {
       "type": "lldb",
       "request": "launch",
-      "name": "Debug executable 'einherjar'",
+      "name": "Debug executable 'smaug'",
       "cargo": {
         "args": [
           "build",
-          "--bin=einherjar",
-          "--package=einherjar"
+          "--bin=smaug",
+          "--package=smaug"
         ],
         "filter": {
-          "name": "einherjar",
+          "name": "smaug",
           "kind": "bin"
         }
       },
@@ -25,16 +25,16 @@
     {
       "type": "lldb",
       "request": "launch",
-      "name": "Debug unit tests in executable 'einherjar'",
+      "name": "Debug unit tests in executable 'smaug'",
       "cargo": {
         "args": [
           "test",
           "--no-run",
-          "--bin=einherjar",
-          "--package=einherjar"
+          "--bin=smaug",
+          "--package=smaug"
         ],
         "filter": {
-          "name": "einherjar",
+          "name": "smaug",
           "kind": "bin"
         }
       },
