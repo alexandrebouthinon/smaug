@@ -6,51 +6,42 @@ pub(crate) struct Lock {
   pub(crate) id: String,
 
   #[serde(rename = "Who")]
-  who: String,
+  pub who: String,
 
   #[serde(rename = "Created")]
-  created: String,
+  pub created: String,
 
   #[serde(rename = "Operation")]
-  operation: String,
+  pub operation: String,
 
   #[serde(rename = "Info")]
-  info: String,
+  pub info: String,
 
   #[serde(rename = "Path")]
-  path: String,
+  pub path: String,
 
   #[serde(rename = "Version")]
-  version: String,
+  pub version: String,
 }
 
 use actix_web::{web, HttpResponse};
 
-/// Extractor for lock id
-#[derive(Debug, Deserialize, Serialize)]
-pub(crate) struct LockArguments {
-  #[serde(rename = "ID")]
-  pub id: String,
-}
-
 /// Create a lock using given information if it does not exist
-pub(crate) fn lock(data: web::Data<crate::State>, lock: web::Json<Lock>) -> HttpResponse {
+pub(crate) fn lock(data: web::Data<crate::AppState>, lock: web::Json<Lock>) -> HttpResponse {
   let mut locks = data.locks.lock().unwrap();
   match locks.get(&lock.id) {
     Some(_) => HttpResponse::Conflict().finish(),
     None => {
-      locks.insert(lock.id.clone(), lock.clone());
+      locks.insert(lock.id.clone(), lock.into_inner());
       HttpResponse::Ok().finish()
     }
   }
 }
 
 /// Delete a lock using the given ID
-pub(crate) fn unlock(
-  data: web::Data<crate::State>,
-  args: web::Query<LockArguments>,
-) -> HttpResponse {
-  match data.locks.lock().unwrap().remove(&args.id) {
+pub(crate) fn unlock(data: web::Data<crate::AppState>, lock: web::Json<Lock>) -> HttpResponse {
+  let mut locks = data.locks.lock().unwrap();
+  match locks.remove(&lock.id) {
     Some(_) => HttpResponse::Ok().finish(),
     None => HttpResponse::NotFound().finish(),
   }
@@ -126,7 +117,7 @@ mod tests {
 
   mod routes {
     use super::*;
-    use crate::api::State;
+    use crate::api::AppState;
 
     use actix_web::{test, App};
     use serde_json::json;
@@ -136,7 +127,7 @@ mod tests {
 
       #[actix_rt::test]
       async fn lock_once() {
-        let mut app = test::init_service(App::new().data(State::new()).configure(routes)).await;
+        let mut app = test::init_service(App::new().data(AppState::new()).configure(routes)).await;
         let req = test::TestRequest::with_uri("/")
           .method(Method::from_bytes(b"LOCK").unwrap())
           .set_json(&json!({
@@ -156,7 +147,7 @@ mod tests {
 
       #[actix_rt::test]
       async fn lock_twice_with_same_id() {
-        let mut app = test::init_service(App::new().data(State::new()).configure(routes)).await;
+        let mut app = test::init_service(App::new().data(AppState::new()).configure(routes)).await;
         let req = test::TestRequest::with_uri("/")
           .method(Method::from_bytes(b"LOCK").unwrap())
           .set_json(&json!({
@@ -192,7 +183,7 @@ mod tests {
 
       #[actix_rt::test]
       async fn lock_twice_with_different_id() {
-        let mut app = test::init_service(App::new().data(State::new()).configure(routes)).await;
+        let mut app = test::init_service(App::new().data(AppState::new()).configure(routes)).await;
         let req = test::TestRequest::with_uri("/")
           .method(Method::from_bytes(b"LOCK").unwrap())
           .set_json(&json!({
@@ -232,9 +223,18 @@ mod tests {
 
       #[actix_rt::test]
       async fn unlock_not_existing() {
-        let mut app = test::init_service(App::new().data(State::new()).configure(routes)).await;
-        let req = test::TestRequest::with_uri("/?ID=d5b9f8f8-c9f8-4f8f-b8f8-f8f8f8f8f8f8")
+        let mut app = test::init_service(App::new().data(AppState::new()).configure(routes)).await;
+        let req = test::TestRequest::with_uri("/")
           .method(Method::from_bytes(b"UNLOCK").unwrap())
+          .set_json(&json!({
+            "ID": "d5b9f8f8-c9f8-4f8f-b8f8-f8f8f8f8f8f8",
+            "Who": "terraform",
+            "Created": "2020-04-01T00:00:00Z",
+            "Operation": "plan",
+            "Info": "",
+            "Path": "./",
+            "Version": "0.12.0"
+          }))
           .to_request();
 
         dbg!(&req);
@@ -245,8 +245,8 @@ mod tests {
 
       #[actix_rt::test]
       async fn unlock_existing() {
-        let mut app = test::init_service(App::new().data(State::new()).configure(routes)).await;
-        let req = test::TestRequest::with_uri("/?ID=d5b9f8f8-c9f8-4f8f-b8f8-f8f8f8f8f8f8")
+        let mut app = test::init_service(App::new().data(AppState::new()).configure(routes)).await;
+        let req = test::TestRequest::with_uri("/")
           .method(Method::from_bytes(b"LOCK").unwrap())
           .set_json(&json!({
             "ID": "d5b9f8f8-c9f8-4f8f-b8f8-f8f8f8f8f8f8",
@@ -262,8 +262,17 @@ mod tests {
         let resp = test::call_service(&mut app, req).await;
         assert_eq!(resp.status(), 200);
 
-        let req = test::TestRequest::with_uri("/?ID=d5b9f8f8-c9f8-4f8f-b8f8-f8f8f8f8f8f8")
+        let req = test::TestRequest::with_uri("/")
           .method(Method::from_bytes(b"UNLOCK").unwrap())
+          .set_json(&json!({
+            "ID": "d5b9f8f8-c9f8-4f8f-b8f8-f8f8f8f8f8f8",
+            "Who": "terraform",
+            "Created": "2020-04-01T00:00:00Z",
+            "Operation": "plan",
+            "Info": "",
+            "Path": "./",
+            "Version": "0.12.0"
+          }))
           .to_request();
 
         let resp = test::call_service(&mut app, req).await;

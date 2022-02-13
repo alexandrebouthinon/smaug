@@ -1,10 +1,8 @@
 mod api;
+use api::AppState;
 
-use actix_web::{
-  middleware::{self, normalize::TrailingSlash},
-  App, HttpServer,
-};
-use api::State;
+use actix_web::middleware::Logger;
+use actix_web::{App, HttpServer};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -13,10 +11,10 @@ async fn main() -> std::io::Result<()> {
 
   HttpServer::new(|| {
     let app = App::new()
-      .data(State::new())
+      .data(AppState::new())
       .configure(api::controllers::lock::routes)
-      .wrap(middleware::Logger::default())
-      .wrap(middleware::NormalizePath::new(TrailingSlash::Always));
+      .configure(api::controllers::state::routes)
+      .wrap(Logger::default());
     app
   })
   .bind("127.0.0.1:8080")?
