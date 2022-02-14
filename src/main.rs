@@ -10,12 +10,11 @@ async fn main() -> std::io::Result<()> {
   env_logger::init();
 
   HttpServer::new(|| {
-    let app = App::new()
+    App::new()
       .data(AppState::new())
       .configure(api::controllers::lock::routes)
       .configure(api::controllers::state::routes)
-      .wrap(Logger::default());
-    app
+      .wrap(Logger::default())
   })
   .bind("127.0.0.1:8080")?
   .run()
